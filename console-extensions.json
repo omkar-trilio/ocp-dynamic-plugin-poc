@@ -3,16 +3,16 @@
     "type": "console.page/route",
     "properties": {
       "exact": true,
-      "path": "/example",
-      "component": { "$codeRef": "ExamplePage" }
+      "path": "/ns-backup",
+      "component": { "$codeRef": "NamespaceBackup" }
     }
   },
   {
     "type": "console.navigation/href",
     "properties": {
-      "id": "example",
-      "name": "Plugin Example",
-      "href": "/example",
+      "id": "ns-backup-href",
+      "name": "Setup Namespace Based Backup",
+      "href": "/ns-backup",
       "perspective": "admin",
       "section": "home"
     }

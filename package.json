@@ -42,6 +42,7 @@
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "react-helmet": "^6.1.0",
+    "react-hook-form": "^7.43.9",
     "react-i18next": "^11.8.11",
     "react-router": "5.2.0",
     "react-router-dom": "5.2.0",
@@ -56,12 +57,12 @@
     "webpack-dev-server": "^4.7.4"
   },
   "consolePlugin": {
-    "name": "console-plugin-template",
+    "name": "tvk-dynamic-plugin-poc",
     "version": "0.0.1",
-    "displayName": "OpenShift Console Plugin Template",
-    "description": "Template project for OpenShift console plugins. Edit package.json to change this message and the plugin name.",
+    "displayName": "TVK Dynamic Plugin POC",
+    "description": "POC for Openshift Dynamic Plugins for Intelligent Recovery using Red Hat Advanced Cluster Management (ACM). ",
     "exposedModules": {
-      "ExamplePage": "./components/ExamplePage"
+      "NamespaceBackup": "./components/NamespaceBackup"
     },
     "dependencies": {
       "@console/pluginAPI": "*"
