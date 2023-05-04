@@ -9,6 +9,7 @@ import {
   FormSelectOption,
 } from '@patternfly/react-core';
 import { useForm, Controller } from 'react-hook-form';
+import { consoleFetchJSON } from '@openshift-console/dynamic-plugin-sdk';
 import useFetch from '../../hooks/useFetch';
 
 const BackupConfigForm: React.FunctionComponent = () => {
@@ -42,8 +43,47 @@ const BackupConfigForm: React.FunctionComponent = () => {
     }
   }, [namespaces, managedClusters]);
 
-  const onSubmit = () => {
-    // TODO: Add form submit functionality
+  const onSubmit = async (data) => {
+    try {
+      await consoleFetchJSON.post(
+        '/api/kubernetes/api/v1/namespaces/default/configmaps',
+        {
+          apiVersion: 'v1',
+          kind: 'ConfigMap',
+          metadata: {
+            name: `aws-s3-configmap-backup-ns-${data.backupNamespace}`,
+            namespace: 'default',
+          },
+          data: {
+            bucketName: data.bucketName,
+            region: data.region,
+            thresholdCapacity: '100Gi',
+            backupNS: data.backupNamespace,
+          },
+          binaryData: {},
+          immutable: false,
+        },
+      );
+
+      await consoleFetchJSON.post(
+        '/api/kubernetes/api/v1/namespaces/default/secrets',
+        {
+          metadata: {
+            namespace: 'default',
+            name: `aws-s3-secret-backup-ns-${data.backupNamespace}`,
+          },
+          apiVersion: 'v1',
+          data: {
+            accessKey: btoa(data.accessKey),
+            secretKey: btoa(data.secretKey),
+          },
+          kind: 'Secret',
+          type: 'Opaque',
+        },
+      );
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   return (
