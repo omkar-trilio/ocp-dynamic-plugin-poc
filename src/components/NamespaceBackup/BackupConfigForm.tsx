@@ -51,7 +51,7 @@ const BackupConfigForm: React.FunctionComponent = () => {
           apiVersion: 'v1',
           kind: 'ConfigMap',
           metadata: {
-            name: `aws-s3-configmap-backup-ns-${data.backupNamespace}`,
+            name: `aws-s3-configmap`,
             namespace: 'default',
           },
           data: {
@@ -70,7 +70,7 @@ const BackupConfigForm: React.FunctionComponent = () => {
         {
           metadata: {
             namespace: 'default',
-            name: `aws-s3-secret-backup-ns-${data.backupNamespace}`,
+            name: `aws-s3-secret`,
           },
           apiVersion: 'v1',
           data: {
