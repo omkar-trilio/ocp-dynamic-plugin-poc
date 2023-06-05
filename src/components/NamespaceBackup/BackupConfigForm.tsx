@@ -7,19 +7,20 @@ import {
   Button,
   FormSelect,
   FormSelectOption,
+  Alert,
 } from '@patternfly/react-core';
 import { useForm, Controller } from 'react-hook-form';
+import { useHistory } from 'react-router-dom';
 import { consoleFetchJSON } from '@openshift-console/dynamic-plugin-sdk';
 import useFetch from '../../hooks/useFetch';
 
 const BackupConfigForm: React.FunctionComponent = () => {
-  const { data: licenses } = useFetch(
-    '/api/kubernetes/apis/triliovault.trilio.io/v1/licenses',
-  );
   const { data: namespaces } = useFetch('/api/kubernetes/api/v1/namespaces');
   const { data: managedClusters } = useFetch(
     '/api/kubernetes/apis/cluster.open-cluster-management.io/v1/managedclusters',
   );
+  const history = useHistory();
+  const [apiError, setApiError] = React.useState('');
 
   const { control, handleSubmit, setValue } = useForm({
     defaultValues: {
@@ -28,7 +29,6 @@ const BackupConfigForm: React.FunctionComponent = () => {
       accessKey: '',
       bucketName: '',
       region: '',
-      tvkLicense: '',
       backupNamespace: '',
     },
   });
@@ -45,6 +45,22 @@ const BackupConfigForm: React.FunctionComponent = () => {
 
   const onSubmit = async (data) => {
     try {
+      // Add protected-by=triliovault label to the source cluster
+      await consoleFetchJSON.put(
+        `/api/kubernetes/apis/cluster.open-cluster-management.io/v1/managedclusters/${data.sourceCluster}`,
+        {
+          ...managedClusters[0],
+          metadata: {
+            ...managedClusters[0].metadata,
+            labels: {
+              ...managedClusters[0].metadata.labels,
+              'protected-by': 'triliovault',
+            },
+          },
+        },
+      );
+
+      // Create configmap
       await consoleFetchJSON.post(
         '/api/kubernetes/api/v1/namespaces/default/configmaps',
         {
@@ -65,6 +81,7 @@ const BackupConfigForm: React.FunctionComponent = () => {
         },
       );
 
+      // Create secret
       await consoleFetchJSON.post(
         '/api/kubernetes/api/v1/namespaces/default/secrets',
         {
@@ -81,8 +98,12 @@ const BackupConfigForm: React.FunctionComponent = () => {
           type: 'Opaque',
         },
       );
+
+      // Redirect to ACM on success
+      history.push('/multicloud/governance/policies/create');
     } catch (e) {
       console.error(e);
+      setApiError(e?.message || 'Something went wrong! Please try again.');
     }
   };
 
@@ -145,13 +166,6 @@ const BackupConfigForm: React.FunctionComponent = () => {
           </FormGroup>
         )}
       />
-      <FormGroup label="TVK License" fieldId="tvk-license">
-        <TextInput
-          id="tvk-license"
-          value={licenses?.length ? licenses[0].metadata.name : ''}
-          isReadOnly
-        />
-      </FormGroup>
       <Controller
         name="backupNamespace"
         control={control}
@@ -173,6 +187,7 @@ const BackupConfigForm: React.FunctionComponent = () => {
           </FormGroup>
         )}
       />
+      {apiError ? <Alert variant="danger" title={apiError} /> : null}
       <ActionGroup>
         <Button type="submit" variant="primary">
           Submit
